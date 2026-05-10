@@ -317,7 +317,7 @@ function loadMission(idx) {
             const area = document.getElementById("action-area");
             area.innerHTML = "";
             if (m.type === "photo") {
-                area.innerHTML = `<div class="preview-container" onclick="document.getElementById('file-input').click()"><img id="image-preview" class="preview-img"><p id="p-text">📷 유물 사진 촬영</p><input type="file" id="file-input" hidden accept="image/*" capture="environment" onchange="previewImage(event)"></div>`;
+                area.innerHTML = `<div class="preview-container" onclick="document.getElementById('file-input').click()"><img id="image-preview" class="preview-img"><p id="p-text">📷 사진 촬영하기</p><input type="file" id="file-input" hidden accept="image/*" capture="environment" onchange="previewImage(event)"></div>`;
                 if (localAnswers[m.id]?.data) { 
                     const img = document.getElementById("image-preview"); 
                     img.src = localAnswers[m.id].data; 
