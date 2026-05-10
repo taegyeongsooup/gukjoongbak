@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>국립중앙박물관 미션 투어 - 시간을 걷는 박물관</title>
+    <style>
+        :root {
+            /* 박물관 테마: 차분한 석조색과 청동색 조합 */
+            --primary-color: #3d3d3d; /* 짙은 석조색 */
+            --accent-color: #a67c00;  /* 고전적인 금색/청동색 */
+            --success-color: #2d5a27; /* 짙은 비색 */
+            --bg-color: #f2f0e9;      /* 오래된 종이/박물관 벽면색 */
+            --card-bg: #ffffff;
+            --text-color: #2d3436;
+            --border-radius: 12px; 
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: #f1f2f6;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 10;
+            border-bottom: 3px solid var(--accent-color);
+        }
+        header h1 { font-size: 1.25rem; margin-bottom: 2px; letter-spacing: -0.5px; }
+        header p { font-size: 0.85rem; opacity: 0.9; font-weight: 300; }
+        .school-tag {
+            font-size: 0.8rem;
+            background-color: var(--accent-color);
+            padding: 3px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 6px;
+            font-weight: bold;
+        }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .sidebar {
+            width: 80px;
+            background-color: #dfe6e9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 0;
+            gap: 8px;
+            overflow-y: auto;
+            border-right: 1px solid #b2bec3;
+        }
+        .mission-btn, .map-btn, .reset-btn {
+            width: 60px;
+            height: 50px;
+            border-radius: 8px; 
+            border: 2px solid #b2bec3;
+            background-color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #636e72;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .map-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: #2d3436;
+            margin-bottom: 5px;
+        }
+        .reset-btn {
+            margin-top: auto;
+            height: 35px;
+            font-size: 0.75rem;
+            background-color: #636e72;
+            color: white;
+            border: none;
+        }
+        .mission-btn.active {
+            border-color: var(--accent-color);
+            background-color: var(--accent-color);
+            color: white;
+        }
+        .mission-btn.completed {
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+        .mission-btn.completed.active {
+            background-color: var(--success-color);
+            color: white;
+        }
+        .content { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .team-card {
+            background-color: var(--card-bg);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex; gap: 6px; align-items: center;
+            border: 1px solid #ddd;
+        }
+        .team-card select { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; background: #fff; }
+        .mission-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 16px;
+            display: flex; flex-direction: column; gap: 12px; flex: 1;
+            border-top: 5px solid var(--accent-color);
+        }
+        .mission-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+        .mission-title { font-weight: bold; color: var(--primary-color); font-size: 1rem; }
+        .mission-desc { font-size: 0.92rem; line-height: 1.6; color: #333; background: #f9f9f9; padding: 12px; border-radius: 8px; border: 1px solid #eee; }
+        .preview-container {
+            width: 100%; min-height: 150px; border: 2px dashed #b2bec3; border-radius: 8px;
+            display: flex; justify-content: center; align-items: center; background: #f1f2f6;
+            flex-direction: column; cursor: pointer;
+        }
+        .preview-img { max-width: 100%; max-height: 250px; display: none; border-radius: 4px; }
+        .submit-btn {
+            background-color: var(--success-color); color: white; border: none; padding: 14px;
+            border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem;
+        }
+        .text-answer-input {
+            width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 0.95rem;
+        }
+        .modal-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; display: none; justify-content: center; align-items: center; }
+        .modal { background: white; color: black; padding: 20px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; display: flex; flex-direction: column; gap: 15px; }
+        #map-image { width: 100%; height: auto; border-radius: 8px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>국립중앙박물관 미션 투어</h1>
+        <p>시간을 걷는 박물관 ⏳</p>
+        <span class="school-tag">여선중 보람찬 수학여행♥</span>
+    </header>
+    <div class="main-container">
+        <div class="sidebar" id="sidebar">
+            <button class="map-btn" onclick="showMap()">지도</button>
+            </div>
+        <div class="content">
+            <div class="team-card">
+                <select id="class-select" onchange="checkTeamChange()">
+                    <option value="1반">1반</option>
+                    <option value="2반">2반</option>
+                    <option value="3반">3반</option>
+                </select>
+                <select id="team-select" onchange="checkTeamChange()">
+                    <option value="1모둠">1모둠</option>
+                    <option value="2모둠">2모둠</option>
+                    <option value="3모둠">3모둠</option>
+                    <option value="4모둠">4모둠</option>
+                    <option value="5모둠">5모둠</option>
+                    <option value="6모둠">6모둠</option>
+                    <option value="7모둠">7모둠</option>
+                    <option value="8모둠">8모둠</option>
+                </select>
+            </div>
+            <div class="mission-card" id="mission-card">
+                <div class="mission-header">
+                    <span class="mission-title" id="m-title">미션 선택</span>
+                    <span id="m-status" style="font-size:0.75rem; font-weight:bold;"></span>
+                </div>
+                <div class="mission-desc" id="m-desc">왼쪽의 미션 번호를 눌러주세요.</div>
+                <div id="action-area"></div>
+                <button class="submit-btn" id="submit-btn" onclick="submitCurrentMission()" style="display:none;">박물관 미션 완료 제출</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-bg" id="map-modal"><div class="modal"><h3>박물관 안내도</h3><img id="map-image" src="map.jpg" alt="안내도"><button class="submit-btn" style="background:var(--primary-color)" onclick="closeMap()">닫기</button></div></div>
+    <div class="modal-bg" id="alert-modal"><div class="modal"><h3 id="modal-title">알림</h3><p id="modal-msg"></p><button class="submit-btn" style="background:var(--primary-color)" onclick="closeAlert()">확인</button></div></div>
+
+    <script>
+        /* 1. 구글 앱스 스크립트 URL (경복궁 시트와 다른 시트를 쓰시려면 새 URL을 넣으세요) */
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyN0FmKZ6Rw7eVD9jFebNuqCWg9RxXMEq2XgQFg-bqTsAndYy_lDcNW2Bj6bni10j24/exec"; 
+
+        const missions = [
+            { id: 1, title: "미션1: 오스트랄로피테쿠스를 만나라!", desc: "남쪽의 원숭이라는 뜻의 오스트랄로피테쿠스를 기억하시나요? 원숭이인 듯 인간인 듯 미묘한 모습의 최초의 인류! 오스트랄로피테쿠스의 두개골이 선사·고대관에 전시되어 있다고 합니다. 오스트랄로피테쿠스의 머리뼈 사진을 찍어 올려주세요!", type: "photo" },
+            { id: 2, title: "미션2: 신석기 시대의 대표적인 토기!?", desc: "‘신석기 시대의 대표적인 토기’하면 가장 잘 알려진 것이 무엇일까요? 바로 우리나라에서 자주 출토되는 빗살무늬 토기죠! 실제 빗살무늬 토기를 자세히 관찰하고 사진을 찍어 올려주세요!", type: "photo" },
+            { id: 3, title: "미션3: 농사짓는 사람들이 그려진 청동기를 찾아라!", desc: "청동기 시대에 만들어진 ‘농경문 청동기’에는 밭을 가는 남성과 새를 잡는 여성이 그려져 있습니다. 문자로 된 기록이 부족한 시대, 사람들의 생활 모습을 추측해 볼 수 있는 소중한 유물이죠. 농경문 청동기를 찾아 사진을 찍어 봅시다!", type: "photo" },
+            { id: 4, title: "미션4: 가장 오래된 우리나라의 불상을 찾아라!", desc: "‘연가 칠년’이 새겨진 불상(연가7년명 금동여래입상)은 우리나라에서 가장 오래된 불상입니다. 539년 무렵 고구려에서 만들어졌다는 내용이 불상에 새겨져 있어 제작 연대를 추측해 볼 수 있죠! 불상을 관찰하고 모둠원 중 한 명이 불상의 포즈를 똑같이 따라하는 사진을 찍어 올려주세요!(불상이 나오지 않아도 됩니다!)", type: "photo" },
+            { id: 5, title: "미션5: 백제의 섬세함을 느껴보자!", desc: "섬세한 걸로 유명한 백제의 유물들. 그 절정은 바로 금동대향로입니다. 아쉽게도 국립중앙박물관에 백제 금동대향로의 실물은 없지만, 모형으로 제작되어 직접 만져볼 수 있도록 해두었다고 합니다. 금동대향로를 만져보고 느낀 점을 써봅시다!", type: "text", placeholder: "만져보고 느낀 점을 입력해주세요." },
+            { id: 6, title: "미션6: 신라의 유리병에서 페르시아의 흔적을 찾아라!", desc: "신라의 무덤 황남대총에서 출토된 봉황 머리 모양 유리병은 사산 왕조 페르시아의 유리병과 아주 닮아 있습니다. 삼국 시대에도 비단길, 바닷길을 통한 교류가 있었음을 보여주는 증거이죠! 국보 제193호 신라의 유리병을 찾아 사진을 찍어주세요!", type: "photo" },
+            { id: 7, title: "미션7: 나란히 앉은 두 개의 불상, 어느 나라의 유물일까?", desc: "선사·고대관에 있는 이불병좌상(두 부처가 나란히 앉아 있는 불상)은 ‘이 나라’가 있었던 곳에서 자주 출토되는 불상입니다. 독특한 모습의 이 불상은 어느 나라의 유물인가요? 박물관의 설명을 상세히 읽어보면 찾을 수 있을 겁니다!", type: "text", placeholder: "유물이 속한 국가 이름 입력" },
+            { id: 8, title: "미션8: 동아시아에서 가장 오래된 세계지도를 찾아라!", desc: "조선시대에 만들어진 이 ‘거대한 지도‘는 현존하는 동아시아에서 가장 오래된 세계지도입니다. 중국과 조선을 실제보다 아주 크게 표현하여 당시 사람들의 인식을 엿볼 수 있는 지도이죠. 중·근세관에서 이 지도를 찾아 이름을 써봅시다! 이름이 10글자로 아주 길답니다!", type: "text", placeholder: "지도 이름 10글자 입력" },
+            { id: 9, title: "미션9: 황제가 되려 했던 고종을 찾아라!", desc: "조선의 제26대 국왕이었던 고종은 1897년 대한제국을 선포하고 스스로를 황제로 칭했습니다. 황제의 상징색하면 황금색이죠? 금빛의 곤룡포를 입고 있는 고종 황제의 어진을 찾아 사진을 찍어해주세요!", type: "photo" },
+            { id: 10, title: "미션10: 서당에서 혼나는 아이를 만나라!", desc: "2층 서화관에서 볼 수 있는 김홍도의 그림은 조선시대 사람들의 삶의 모습을 실감나게 묘사하고 있습니다. 그림들을 찬찬히 둘러보고 서당에서 회초리를 맞고 훌쩍이는 아이의 모습을 찍어 올려봅시다!", type: "photo" },
+            { id: 11, title: "미션11: 그리스 청동 투구는 어떻게 우리에게 오게 되었는가?", desc: "2층 기증관에서 볼 수 있는 그리스 청동 투구는 기원전 6세기에 제작된 것입니다. 이 투구는 1936년 베를린 올림픽 마라톤의 우승자에게 주는 부상이었죠. 우승자인 ○○○ 선수가 수여했어야 했지만, 당시는 일제강점기였기에 전달되지 못하고 50년간 베를린에 머물렀었죠. 50년 후 ○○○ 선수는 투구를 돌려받았지만, 이를 박물관에 기증했고 국가는 이 투구를 보물로 지정했죠. 이 선수는 누구일까요?", type: "text", placeholder: "선수의 이름을 입력해주세요." },
+            { id: 12, title: "미션12: 무슨 생각을 하셨나요?", desc: "2층 사유의 방은 국립중앙박물관에서 가장 유명한 장소입니다. 다리를 꼬고 앉아 깊은 생각을 하고 있는 불상들을 바라보고, 고요한 사유에 빠져 보기 바랍니다. 무슨 생각을 했는지 조장이 대표로 써주세요!", type: "text", placeholder: "사유의 소감을 입력해주세요." },
+            { id: 13, title: "미션13: 카이사르의 흉상을 바라보라!", desc: "3층 세계문화관에는 로마의 장군 카이사르의 흉상이 전시되어 있습니다. 로마 시대에 제작되었던 두상을 보완하여 르네상스 시대에 제작한 것이라고 합니다. 수척한 장군의 모습을 찍어 올려주세요!", type: "photo" },
+            { id: 14, title: "미션14: 화려한 고려의 석탑을 우러러보라!", desc: "박물관 1층 로비에 위치한 경천사지 10층 석탑은 고려시대에 만들어진 석탑으로, 원래는 개성(현재 북한) 지역에 있던 석탑입니다. 일본인에 의해 무단으로 반출되었다가 되돌아 와 현재는 국립중앙박물관에 복원되어 있죠. 불교와 관련된 이야기가 상세히 조각된 이 석탑을 배경으로 모둠원 전체의 얼굴이 나오도록 단체 사진을 찍어 올려주세요!", type: "photo" }
+        ];
+
+        let currentIdx = -1;
+        let localAnswers = {};
+        const STORAGE_KEY = "nmk_mission_v1"; // 박물관 전용 키 (경복궁 데이터와 분리)
+
+        try { localAnswers = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch(e) { localAnswers = {}; }
+        
+        window.onload = function() {
+            const lc = localStorage.getItem("nmk_class");
+            const lt = localStorage.getItem("nmk_team");
+            if (lc) document.getElementById("class-select").value = lc;
+            if (lt) document.getElementById("team-select").value = lt;
+            buildSidebar();
+        };
+
+        function safeSaveData() {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(localAnswers)); return true; } 
+            catch (e) { alert("저장 공간이 부족합니다! [초기화] 버튼을 눌러주세요."); return false; }
+        }
+
+        function resetAllData() {
+            if(confirm("박물관 미션 기록을 모두 지우시겠습니까?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                localAnswers = {};
+                location.reload();
+            }
+        }
+
+        function checkTeamChange() {
+            localStorage.setItem("nmk_class", document.getElementById("class-select").value);
+            localStorage.setItem("nmk_team", document.getElementById("team-select").value);
+        }
+
+        function buildSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            Array.from(sidebar.children).forEach(child => { if(child.className.includes("mission-btn") || child.className.includes("reset-btn")) child.remove(); });
+            missions.forEach((m, idx) => {
+                const btn = document.createElement("button");
+                btn.className = `mission-btn ${idx === currentIdx ? 'active' : ''}`;
+                if (localAnswers[m.id]?.submitted) btn.classList.add("completed");
+                btn.innerText = m.id;
+                btn.onclick = () => loadMission(idx);
+                sidebar.appendChild(btn);
+            });
+            const resetBtn = document.createElement("button");
+            resetBtn.className = "reset-btn"; resetBtn.innerText = "초기화"; resetBtn.onclick = resetAllData;
+            sidebar.appendChild(resetBtn);
+        }
+
+        function loadMission(idx) {
+            currentIdx = idx;
+            const m = missions[idx];
+            buildSidebar();
+            document.getElementById("m-title").innerText = m.title;
+            document.getElementById("m-desc").innerText = m.desc;
+            document.getElementById("submit-btn").style.display = "block";
+            const statusLabel = document.getElementById("m-status");
+            if (localAnswers[m.id]?.submitted) { statusLabel.innerText = "● 제출됨"; statusLabel.style.color = "var(--success-color)"; }
+            else { statusLabel.innerText = "○ 미제출"; statusLabel.style.color = "#d35400"; }
+            
+            const area = document.getElementById("action-area");
+            area.innerHTML = "";
+            if (m.type === "photo") {
+                area.innerHTML = `<div class="preview-container" onclick="document.getElementById('file-input').click()"><img id="image-preview" class="preview-img"><p id="p-text">📷 유물 사진 촬영</p><input type="file" id="file-input" hidden accept="image/*" capture="environment" onchange="previewImage(event)"></div>`;
+                if (localAnswers[m.id]?.data) { const img = document.getElementById("image-preview"); img.src = localAnswers[m.id].data; img.style.display = "block"; document.getElementById("p-text").style.display = "none"; }
+            } else {
+                const val = localAnswers[m.id]?.data || "";
+                area.innerHTML = `<input type="text" id="text-input" class="text-answer-input" placeholder="${m.placeholder}" value="${val}" oninput="saveText(this.value)">`;
+            }
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height, max = 800;
+                    if (w > h) { if (w > max) { h *= max/w; w = max; } } else { if (h > max) { w *= max/h; h = max; } }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const data = canvas.toDataURL('image/jpeg', 0.7);
+                    document.getElementById("image-preview").src = data;
+                    document.getElementById("image-preview").style.display = "block";
+                    document.getElementById("p-text").style.display = "none";
+                    localAnswers[missions[currentIdx].id] = { data: data, submitted: false };
+                    safeSaveData();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveText(val) { localAnswers[missions[currentIdx].id] = { data: val, submitted: false }; safeSaveData(); }
+
+        function submitCurrentMission() {
+            const mId = missions[currentIdx].id;
+            if (!localAnswers[mId] || !localAnswers[mId].data) return showAlert("알림", "정답을 입력하거나 사진을 찍어주세요!");
+            const payload = {
+                class: document.getElementById("class-select").value,
+                team: document.getElementById("team-select").value,
+                missionId: mId,
+                missionTitle: missions[currentIdx].title,
+                answer: localAnswers[mId].data
+            };
+            const btn = document.getElementById("submit-btn");
+            btn.innerText = "전송 중..."; btn.disabled = true;
+            fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) })
+            .then(() => {
+                localAnswers[mId].submitted = true; safeSaveData();
+                buildSidebar(); loadMission(currentIdx);
+                showAlert("성공", "박물관 미션 기록이 전송되었습니다! ✅");
+            })
+            .finally(() => { btn.innerText = "박물관 미션 완료 제출"; btn.disabled = false; });
+        }
+
+        function showMap() { document.getElementById("map-modal").style.display = "flex"; }
+        function closeMap() { document.getElementById("map-modal").style.display = "none"; }
+        function showAlert(title, msg) { document.getElementById("modal-title").innerText = title; document.getElementById("modal-msg").innerText = msg; document.getElementById("alert-modal").style.display = "flex"; }
+        function closeAlert() { document.getElementById("alert-modal").style.display = "none"; }
+    </script>
+</body>
+</html>
