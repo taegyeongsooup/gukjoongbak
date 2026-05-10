@@ -226,8 +226,11 @@
             { id: 14, title: "미션14: 화려한 고려의 석탑을 우러러보라!", desc: "박물관 1층 로비에 위치한 경천사지 10층 석탑은 고려시대에 만들어진 석탑으로, 원래는 개성(현재 북한) 지역에 있던 석탑입니다. 일본인에 의해 무단으로 반출되었다가 되돌아 와 현재는 국립중앙박물관에 복원되어 있죠. 불교와 관련된 이야기가 상세히 조각된 이 석탑을 배경으로 모둠원 전체의 얼굴이 나오도록 단체 사진을 찍어 올려주세요!", type: "photo" }
         ];
 
-        let currentIdx = -1;
+let currentIdx = -1;
         let localAnswers = {};
+        // 아래 두 줄을 반드시 추가해야 경고창이 작동합니다.
+        let lastClass = localStorage.getItem("nmk_class");
+        let lastTeam = localStorage.getItem("nmk_team");
         const STORAGE_KEY = "nmk_mission_v1"; // 박물관 전용 키 (경복궁 데이터와 분리)
 
         try { localAnswers = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch(e) { localAnswers = {}; }
@@ -257,15 +260,16 @@ function checkTeamChange() {
             const currentClass = document.getElementById("class-select").value;
             const currentTeam = document.getElementById("team-select").value;
             
-            // 클래스와 팀이 바뀌었을 때 경고 팝업 띄우기
+            // 1. 기존 데이터가 존재하고, 현재 선택값이 기존과 다를 때만 경고창 표시
             if (lastClass && lastTeam && (lastClass !== currentClass || lastTeam !== currentTeam)) {
                 showAlert("경고", "이전 기록과 다른 모둠입니다. 본인 모둠이 맞는지 확인해주세요!");
             }
             
-            localStorage.setItem("nmk_class", currentClass);
-            localStorage.setItem("nmk_team", currentTeam);
+            // 2. 비교가 끝난 후 현재 값을 변수와 로컬스토리지에 갱신
             lastClass = currentClass;
             lastTeam = currentTeam;
+            localStorage.setItem("nmk_class", currentClass);
+            localStorage.setItem("nmk_team", currentTeam);
         }
 
         function buildSidebar() {
